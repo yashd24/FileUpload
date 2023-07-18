@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>File Sharing</title>
+    <link
+      href="https://unpkg.com/filepond/dist/filepond.css"
+      rel="stylesheet"
+    />
+    <link
+    href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+    rel="stylesheet"
+/>
+  </head>
+  <body>
+    <input type="file" multiple />
+    <button onclick = "uploaded_files()"> Upload </button>
+    <button onclick = "CopyLink()"> Download Files </button>
+  </body>
+  <!-- Plugin scripts-->
+  {% comment %} <script src="https://unpkg.com/filepond-plugin-image-resize/dist/filepond-plugin-image-resize.js"></script> 
+  <script src-"https://unpkg.com/filepond-plugin-image-transform/dist/filepond-plugin-image-transform.js"></script> {% endcomment %}
+  <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script> 
+  <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+
+  <script>
+
+    // initialize the plugins
+    
+    FilePond.registerPlugin(FilePondPluginImagePreview);
+    const inputElement = document.querySelector("input[type='file']");
+    const pond = FilePond.create(inputElement);
+    FilePond.registerPlugin(FilePondPluginImagePreview);
+
+    var url = none;
+
+    function uploaded_files() {
+    var files = pond.getFiles();
+    var formdata = new FormData();
+
+    for (var i = 0; i < files.length; i++) {
+        formdata.append('files', files[i].file);
+    }
+
+    fetch('/handle/', {
+        method: 'POST',
+        headers: {'X-CSRFToken': "{{ csrf_token }}"},
+        body: formdata
+    }).then(res => res.json())
+        .then(result => {
+        console.log(result);
+        
+        url = `http://127.0.0.1:8000/download/${result.data.folder}`;
+
+        })
+        .catch(error => {
+        console.error(error);
+        });
+    }
+
+
+    function CopyLink() {
+
+      
+         // Copy the text inside the text field
+        navigator.clipboard.writeText(url);
+      
+        // Alert the copied text
+        //alert("Copied the text: " + url);
+
+        window.location.href = url
+
+      }
+
+
+  </script>
+</html>
